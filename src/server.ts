@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { condb } from "./condb";
+import { routes } from "./routes";
 
 
 const express = require("express");
@@ -16,6 +17,10 @@ app.get("/", (req: Request, res: Response) => {
     return res.json(result);
   });
 });
+
+app.use("/auth",routes.auth);
+app.use("/firebase",routes.firebase);
+
 
 const PORT = process.env.PORT || 8000;
 
