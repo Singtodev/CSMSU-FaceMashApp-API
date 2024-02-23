@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { condb } from "./condb";
-import { routes } from "./routes";
+import { routes } from "./controllers";
+import { jwtService } from "./services";
 
 
 const express = require("express");
@@ -13,14 +14,12 @@ const app = express();
 app.use(bodyParser.json());
 
 app.get("/", (req: Request, res: Response) => {
-  return condb.query("select * from fm_pictures", (err : any, result: any, fields: any) => {
-    return res.json(result);
-  });
+  return res.send("FaceMashAPI V1")
 });
 
 app.use("/auth",routes.auth);
+app.use("/users",routes.user);
 app.use("/firebase",routes.firebase);
-
 
 const PORT = process.env.PORT || 8000;
 
