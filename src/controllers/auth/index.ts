@@ -12,7 +12,6 @@ router.get("/", (req: Request, res: Response) => {
 router.post("/login", async (req: Request, res: Response) => {
   console.log(req.body);
   const { email, password } = req.body;
-
   try {
     const userExists: any = await new Promise((resolve, reject) => {
       condb.query(
@@ -33,11 +32,28 @@ router.post("/login", async (req: Request, res: Response) => {
     }
 
     let user = userExists[0];
-    const token = jwtService.getToken(user);
+    const token = await jwtService.getToken(user);
 
     return res.status(200).json({
+      msg: "Your Logged in!",
       token,
     });
+  } catch (error) {
+    console.error("Error:", error);
+    return res.status(500).send("Internal server error");
+  }
+});
+
+router.post("/refresh_token", async (req: Request, res: Response) => {
+  const token =
+    req.headers.authorization && req.headers.authorization.split(" ")[1];
+
+  if (!token)
+    return res.status(404).json({ status: false, msg: "Token not found" });
+
+  try {
+    const data = await jwtService.refreshToken(token);
+    return res.status(200).json(data);
   } catch (error) {
     console.error("Error:", error);
     return res.status(500).send("Internal server error");

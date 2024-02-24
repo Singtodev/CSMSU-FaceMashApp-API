@@ -13,7 +13,7 @@ function verifyToken(token: string) {
 }
 
 function getToken(data: any) {
-  return jwt.sign({ ...data }, process.env.JWT_SECRET, { expiresIn: "10m" });
+  return jwt.sign({ ...data }, process.env.JWT_SECRET, { expiresIn: "1m" });
 }
 
 async function guardAuth(req: any, res: any) {
@@ -32,8 +32,58 @@ async function guardAuth(req: any, res: any) {
   }
 }
 
+async function refreshToken(token: string) {
+  const decodedToken: any = jwt.decode(token);
+
+  if (!decodedToken) {
+    throw new Error("Invalid token");
+  }
+
+  const currentTimestamp = Math.floor(Date.now() / 1000);
+
+  let time = new Date(decodedToken.exp * 1000).toLocaleString("th", {
+    hour12: false,
+  });
+
+  let expireIn = "Token expire in " + time;
+
+  if (decodedToken.exp > currentTimestamp)
+    return {
+      token,
+      expireIn,
+      msg: "You can use this token!",
+      isExpire: false,
+    };
+
+  delete decodedToken.iat;
+  delete decodedToken.exp;
+
+  const newToken = await getToken(decodedToken);
+  return {
+    token,
+    newToken,
+    expireIn,
+    msg: "Refresh token success!",
+    isExpire: true,
+  };
+}
+
+function isTokenExpired(token: string): boolean {
+  // Decode the token to get the payload
+  const decodedToken: any = jwt.decode(token);
+
+  if (!decodedToken) {
+    throw new Error("Invalid token");
+  }
+
+  // Check if the token has expired
+  const currentTimestamp = Math.floor(Date.now() / 1000);
+  return decodedToken.exp < currentTimestamp;
+}
 export default {
   verifyToken,
   getToken,
   guardAuth,
+  refreshToken,
+  isTokenExpired,
 };
