@@ -33,7 +33,7 @@ router.post("/login", async (req: Request, res: Response) => {
 
     let user = userExists[0];
     const token = await jwtService.getToken(user);
-
+    res.setHeader("Authorization", `Bearer ${token}`);
     return res.status(200).json({
       msg: "Your Logged in!",
       token,
