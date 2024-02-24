@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 
 import { routes } from "./controllers";
-import { jwtService } from "./services";
+import { refreshTokenMiddleWare } from "./middlewares/refreshTokenMidleware";
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
@@ -15,25 +15,8 @@ app.get("/", (req: Request, res: Response) => {
   return res.send("FaceMashAPI V1");
 });
 
-app.use(async (req: Request, res: Response, next: NextFunction) => {
-  // Get the token from the request headers
-  const token =
-    req.headers.authorization && req.headers.authorization.split(" ")[1];
-
-  if (!token) {
-    return next();
-  }
-
-  try {
-    if (jwtService.isTokenExpired(token)) {
-      console.log("token หมดอายุแล้ว");
-      const newToken = jwtService.refreshToken(token);
-      res.setHeader("Authorization", `Bearer ${newToken}`);
-    }
-    next();
-  } catch (error: any) {
-    return res.status(401).json({ error: error.message });
-  }
+app.use((req: Request, res: Response, next: NextFunction) => {
+  refreshTokenMiddleWare(req, res, next);
 });
 
 app.use("/auth", routes.auth);
