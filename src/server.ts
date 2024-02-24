@@ -1,17 +1,16 @@
 import { NextFunction, Request, Response } from "express";
-import { condb } from "./condb";
+
 import { routes } from "./controllers";
 import { jwtService } from "./services";
-
 const express = require("express");
 const bodyParser = require("body-parser");
+const cors = require("cors");
 
 require("dotenv").config();
 
 const app = express();
-
+app.use(cors());
 app.use(bodyParser.json());
-
 app.get("/", (req: Request, res: Response) => {
   return res.send("FaceMashAPI V1");
 });
