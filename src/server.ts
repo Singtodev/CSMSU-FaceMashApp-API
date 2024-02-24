@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 
 import { routes } from "./controllers";
-import { refreshTokenMiddleWare } from "./middlewares/refreshTokenMidleware";
+import { refreshTokenMiddleWare } from "./middlewares/refreshTokenMiddleware";
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
