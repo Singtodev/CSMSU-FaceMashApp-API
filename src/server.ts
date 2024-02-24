@@ -22,7 +22,7 @@ app.use(async (req: Request, res: Response, next: NextFunction) => {
     req.headers.authorization && req.headers.authorization.split(" ")[1];
 
   if (!token) {
-    return res.status(401).json({ error: "Token not found" });
+    return next();
   }
 
   try {
