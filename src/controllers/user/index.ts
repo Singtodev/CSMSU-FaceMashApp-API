@@ -34,7 +34,7 @@ router.get("/me", async (req: Request, res: Response) => {
         msg,
       });
     }
-    return res.send("users me it work!");
+    return res.json({...data});
   } catch (err) {
     return res.status(500).send("Internal server error");
   }

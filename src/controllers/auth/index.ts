@@ -44,7 +44,7 @@ router.post("/login", async (req: Request, res: Response) => {
   }
 });
 
-router.post("/refresh_token", async (req: Request, res: Response) => {
+router.get("/refresh_token", async (req: Request, res: Response) => {
   const token =
     req.headers.authorization && req.headers.authorization.split(" ")[1];
 
@@ -64,9 +64,6 @@ router.get("/logout", (req: Request, res: Response) => {
   return res.send("auth logout it work!");
 });
 
-router.get("/remember", (req: Request, res: Response) => {
-  return res.send("auth remember it work!");
-});
 
 router.get("/reset_password", (req: Request, res: Response) => {
   return res.send("auth reset password it work!");
