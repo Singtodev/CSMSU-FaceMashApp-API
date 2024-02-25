@@ -16,7 +16,6 @@ export const refreshTokenMiddleWare = async (
 
   try {
     if (jwtService.isTokenExpired(token)) {
-      console.log("token หมดอายุแล้ว");
       const newToken = jwtService.refreshToken(token);
       return res.setHeader("Authorization", `Bearer ${newToken}`);
     }

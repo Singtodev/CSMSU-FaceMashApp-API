@@ -36,7 +36,7 @@ router.post("/login", async (req: Request, res: Response) => {
     res.setHeader("Authorization", `Bearer ${token}`);
     return res.status(200).json({
       msg: "Your Logged in!",
-      token,
+      token
     });
   } catch (error) {
     console.error("Error:", error);

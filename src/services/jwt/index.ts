@@ -69,17 +69,16 @@ async function refreshToken(token: string) {
 }
 
 function isTokenExpired(token: string): boolean {
-  // Decode the token to get the payload
   const decodedToken: any = jwt.decode(token);
 
   if (!decodedToken) {
     throw new Error("Invalid token");
   }
-
-  // Check if the token has expired
   const currentTimestamp = Math.floor(Date.now() / 1000);
   return decodedToken.exp < currentTimestamp;
 }
+
+
 export default {
   verifyToken,
   getToken,
