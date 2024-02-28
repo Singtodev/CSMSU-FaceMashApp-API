@@ -14,7 +14,7 @@ router.get("/", async (req: Request, res: Response) => {
     //     msg,
     //   });
     // }
-    let sql = `SELECT * FROM rankOrder ORDER BY vote_count DESC`;
+    let sql = `SELECT * FROM rankOrder ORDER BY rating_score DESC`;
     condb.query(sql, (err, result) => {
       if (err) throw err;
       return res.json(result);
@@ -33,11 +33,21 @@ router.get("/random", async (req: Request, res: Response) => {
     //     msg,
     //   });
     // }
-    let sql = `SELECT * FROM fm_pictures ORDER BY RAND() LIMIT 2 `;
-    condb.query(sql, (err, result) => {
-      if (err) throw err;
-      return res.json(result);
-    });
+
+    const picOne = await queryAsync(
+      `SELECT * FROM fm_pictures ORDER BY RAND() LIMIT 1`
+    );
+
+    const picTwo = await queryAsync(
+      `SELECT * FROM fm_pictures WHERE pid != ? AND rating_score BETWEEN ? AND ? ORDER BY RAND() LIMIT 1 `,
+      [picOne[0].pid, picOne[0].rating_score - 50, picOne[0].rating_score + 50]
+    );
+
+    if (picOne.length > 0 && picTwo.length > 0) {
+      return res.status(200).json([...picOne, ...picTwo]);
+    } else {
+      return res.status(404).send("Not Match!");
+    }
   } catch (err) {
     console.log(err);
   }
@@ -45,7 +55,6 @@ router.get("/random", async (req: Request, res: Response) => {
 
 router.post("/vote", async (req: Request, res: Response) => {
   try {
-
     const { status, msg, data } = await jwtService.guardAuth(req, res);
     if (!status) {
       return res.status(400).json({
@@ -86,8 +95,9 @@ router.post("/vote", async (req: Request, res: Response) => {
 
     // Update winner's vote count
     const updateSql =
-      "UPDATE fm_pictures SET vote_count = vote_count + ? where pid = ?";
+      "UPDATE fm_pictures SET rating_score = rating_score + ? , vote_count = vote_count + 1 where pid = ?";
     const updateParams = [score, winnerId];
+
     await queryAsync(updateSql, updateParams);
 
     return res.status(200).json({ affectedRows: 1 });
