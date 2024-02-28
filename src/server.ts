@@ -10,12 +10,14 @@ require("dotenv").config();
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
+
 app.get("/", (req: Request, res: Response) => {
   return res.send("FaceMashAPI V1");
 });
 
 app.use("/auth", routes.auth);
 app.use("/users", routes.user);
+app.use("/picture", routes.picture);
 app.use("/firebase", routes.firebase);
 
 const PORT = process.env.PORT || 8000;

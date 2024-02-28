@@ -1,6 +1,7 @@
 import jwtService from "./jwt";
-
+import bcryptService from "./bcrypt";
 
 export {
-    jwtService
+    jwtService,
+    bcryptService
 }

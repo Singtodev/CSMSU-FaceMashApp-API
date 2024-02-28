@@ -13,7 +13,7 @@ function verifyToken(token: string) {
 }
 
 function getToken(data: any) {
-  return jwt.sign({ ...data }, process.env.JWT_SECRET, { expiresIn: "1m" });
+  return jwt.sign({ ...data }, process.env.JWT_SECRET, { expiresIn: "1h" });
 }
 
 async function guardAuth(req: any, res: any) {
@@ -77,7 +77,6 @@ function isTokenExpired(token: string): boolean {
   const currentTimestamp = Math.floor(Date.now() / 1000);
   return decodedToken.exp < currentTimestamp;
 }
-
 
 export default {
   verifyToken,
