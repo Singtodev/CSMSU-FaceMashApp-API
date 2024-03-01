@@ -24,6 +24,27 @@ router.get("/", async (req: Request, res: Response) => {
   }
 });
 
+
+router.get("/me", async (req: Request, res: Response) => {
+    try {
+      const { status, msg, data } = await jwtService.guardAuth(req, res);
+      if (!status) {
+        return res.status(400).json({
+          code: "Unauthorized",
+          msg,
+        });
+      }
+
+      let sql = `SELECT * FROM fm_pictures where uid = ? ORDER BY create_at DESC `;
+      condb.query(sql,[data.uid],(err, result) => {
+        if (err) throw err;
+        return res.json(result);
+      });
+    } catch (err) {
+      console.log(err);
+    }
+});
+
 router.get("/random", async (req: Request, res: Response) => {
   try {
     // const { status, msg, data } = await jwtService.guardAuth(req, res);
@@ -84,7 +105,7 @@ router.post("/vote", async (req: Request, res: Response) => {
     if (winnerPic.vote_count > opponentPic.vote_count) {
       score += Math.floor(Math.random() * 5); // 1 - 5 point
     } else {
-      score += Math.floor(Math.random() * 5) + 5; // 5 - 10 point
+      score += Math.floor(Math.random() * 5) + 20; // 5 - 20 point
     }
 
     // Insert vote into database
@@ -106,4 +127,6 @@ router.post("/vote", async (req: Request, res: Response) => {
     return res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
+
 export default router;
