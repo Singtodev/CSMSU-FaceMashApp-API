@@ -85,7 +85,6 @@ router.post("/vote", async (req: Request, res: Response) => {
     }
 
     const { uid, winnerId, opponentId } = req.body;
-    console.log(req.body);
 
     // Retrieve winner picture
     const winnerPic = await queryAsync(
@@ -102,11 +101,16 @@ router.post("/vote", async (req: Request, res: Response) => {
     let score = 0;
 
     // Calculate score
-    if (winnerPic.vote_count > opponentPic.vote_count) {
-      score += Math.floor(Math.random() * 5); // 1 - 5 point
-    } else {
-      score += Math.floor(Math.random() * 5) + 20; // 5 - 20 point
+    if (winnerPic[0].rating_score > opponentPic[0].rating_score) {
+      score = Math.floor(Math.random() * 5) + 1; // 1 - 5 point
+    } else if (winnerPic[0].rating_score == opponentPic[0].rating_score){
+      score = Math.floor(Math.random() * 5) + 1; // 1 - 5 point
+    }else{
+      score = Math.floor(Math.random() * 5) + 21// 5 - 20 point
     }
+
+
+    console.log(score);
 
     // Insert vote into database
     const insertVoteSql =
@@ -121,7 +125,7 @@ router.post("/vote", async (req: Request, res: Response) => {
 
     await queryAsync(updateSql, updateParams);
 
-    return res.status(200).json({ affectedRows: 1 });
+    return res.status(200).json({ affectedRows: 1 , score , win: winnerPic });
   } catch (err) {
     console.error("Error:", err);
     return res.status(500).json({ error: "Internal Server Error" });
