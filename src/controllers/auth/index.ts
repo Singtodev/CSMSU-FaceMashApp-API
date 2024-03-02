@@ -8,9 +8,24 @@ const jwt = require("jsonwebtoken");
 const express = require("express");
 const router = express.Router();
 
-router.get("/", (req: Request, res: Response) => {
-  return res.send("auth work!");
-});
+/**
+ * @swagger
+ * tags:
+ *   - name: auth
+ *     description: Operations related to firebase
+ */
+
+/**
+ * @swagger
+ * /auth/login:
+ *   post:
+ *     summary: Auth Login
+ *     description: Required Email Password
+ *     responses:
+ *       200:
+ *         description: return a token
+ *     tags: [auth]
+ */
 
 router.post("/login", async (req: Request, res: Response) => {
   const { email, password } = req.body;
@@ -57,6 +72,18 @@ router.post("/login", async (req: Request, res: Response) => {
     return res.status(500).send("Internal server error");
   }
 });
+
+/**
+ * @swagger
+ * /auth/register:
+ *   post:
+ *     summary: Auth Register
+ *     description: Required Email Password Full Name
+ *     responses:
+ *       200:
+ *         description: return a token
+ *     tags: [auth]
+ */
 
 router.post(
   "/register",
@@ -117,6 +144,19 @@ router.post(
   }
 );
 
+
+/**
+ * @swagger
+ * /auth/refresh_token:
+ *   post:
+ *     summary: Auth Refresh Token
+ *     description: Required Token
+ *     responses:
+ *       200:
+ *         description: return a token
+ *     tags: [auth]
+ */
+
 router.get("/refresh_token", async (req: Request, res: Response) => {
   const token =
     req.headers.authorization && req.headers.authorization.split(" ")[1];
@@ -133,16 +173,5 @@ router.get("/refresh_token", async (req: Request, res: Response) => {
   }
 });
 
-router.get("/logout", (req: Request, res: Response) => {
-  return res.send("auth logout it work!");
-});
-
-router.get("/reset_password", (req: Request, res: Response) => {
-  return res.send("auth reset password it work!");
-});
-
-router.get("/delete_account", (req: Request, res: Response) => {
-  return res.send("auth delete_account it work!");
-});
 
 export default router;

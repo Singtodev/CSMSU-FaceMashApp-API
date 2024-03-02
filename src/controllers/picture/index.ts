@@ -5,6 +5,25 @@ import { jwtService } from "../../services";
 const express = require("express");
 const router = express.Router();
 
+/**
+ * @swagger
+ * tags:
+ *   - name: picture
+ *     description: Operations related to firebase
+ */
+
+/**
+ * @swagger
+ * /picture:
+ *   get:
+ *     summary: Get all image
+ *     description: Return all images
+ *     responses:
+ *       200:
+ *         description: return a url image
+ *     tags: [picture]
+ */
+
 router.get("/", async (req: Request, res: Response) => {
   try {
     // const { status, msg, data } = await jwtService.guardAuth(req, res);
@@ -24,26 +43,49 @@ router.get("/", async (req: Request, res: Response) => {
   }
 });
 
+/**
+ * @swagger
+ * /picture/me:
+ *   get:
+ *     summary: Get all image current user
+ *     description: Return all images
+ *     responses:
+ *       200:
+ *         description: return a url image
+ *     tags: [picture]
+ */
 
 router.get("/me", async (req: Request, res: Response) => {
-    try {
-      const { status, msg, data } = await jwtService.guardAuth(req, res);
-      if (!status) {
-        return res.status(400).json({
-          code: "Unauthorized",
-          msg,
-        });
-      }
-
-      let sql = `SELECT * FROM fm_pictures where uid = ? ORDER BY create_at DESC `;
-      condb.query(sql,[data.uid],(err, result) => {
-        if (err) throw err;
-        return res.json(result);
+  try {
+    const { status, msg, data } = await jwtService.guardAuth(req, res);
+    if (!status) {
+      return res.status(400).json({
+        code: "Unauthorized",
+        msg,
       });
-    } catch (err) {
-      console.log(err);
     }
+
+    let sql = `SELECT * FROM fm_pictures where uid = ? ORDER BY create_at DESC `;
+    condb.query(sql, [data.uid], (err, result) => {
+      if (err) throw err;
+      return res.json(result);
+    });
+  } catch (err) {
+    console.log(err);
+  }
 });
+
+/**
+ * @swagger
+ * /picture/random:
+ *   get:
+ *     summary: Get Random picture
+ *     description: Return images
+ *     responses:
+ *       200:
+ *         description: return a url image
+ *     tags: [picture]
+ */
 
 router.get("/random", async (req: Request, res: Response) => {
   try {
@@ -74,6 +116,18 @@ router.get("/random", async (req: Request, res: Response) => {
   }
 });
 
+/**
+ * @swagger
+ * /picture/vote:
+ *   post:
+ *     summary: Vote Image
+ *     description: Update And Insert Score
+ *     responses:
+ *       200:
+ *         description: return a url image
+ *     tags: [picture]
+ */
+
 router.post("/vote", async (req: Request, res: Response) => {
   try {
     const { status, msg, data } = await jwtService.guardAuth(req, res);
@@ -103,14 +157,11 @@ router.post("/vote", async (req: Request, res: Response) => {
     // Calculate score
     if (winnerPic[0].rating_score > opponentPic[0].rating_score) {
       score = Math.floor(Math.random() * 5) + 1; // 1 - 5 point
-    } else if (winnerPic[0].rating_score == opponentPic[0].rating_score){
+    } else if (winnerPic[0].rating_score == opponentPic[0].rating_score) {
       score = Math.floor(Math.random() * 5) + 1; // 1 - 5 point
-    }else{
-      score = Math.floor(Math.random() * 5) + 21// 5 - 20 point
+    } else {
+      score = Math.floor(Math.random() * 5) + 21; // 5 - 20 point
     }
-
-
-    console.log(score);
 
     // Insert vote into database
     const insertVoteSql =
@@ -125,12 +176,79 @@ router.post("/vote", async (req: Request, res: Response) => {
 
     await queryAsync(updateSql, updateParams);
 
-    return res.status(200).json({ affectedRows: 1 , score , win: winnerPic });
+    return res.status(200).json({ affectedRows: 1, score, win: winnerPic });
   } catch (err) {
     console.error("Error:", err);
     return res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
+/**
+ * @swagger
+ * /picture:
+ *   post:
+ *     summary: Create Image
+ *     description: Update And Insert Score
+ *     responses:
+ *       200:
+ *         description: return a url image
+ *     tags: [picture]
+ */
+
+router.post("/", async (req: Request, res: Response) => {
+  try {
+    const { status, msg, data } = await jwtService.guardAuth(req, res);
+    if (!status) {
+      return res.status(400).json({
+        code: "Unauthorized",
+        msg,
+      });
+    }
+
+    const { url, name } = req.body;
+
+    if (!url || !name) {
+      return res.send("Required url and name");
+    }
+
+    let count: any = await new Promise((resolve, reject) => {
+      condb.query(
+        `SELECT count(uid) as pic_count FROM fm_pictures where uid = ?`,
+        [data.uid],
+        (err: any, result: any, fields: any) => {
+          if (err) {
+            console.error("Database error:", err);
+            reject(err);
+          }
+          resolve(result[0]);
+        }
+      );
+    });
+
+    if(count.pic_count >= 5) return res.status(404).send(" Maximum picture you have " + count.pic_count + " items");
+
+    const create = await new Promise((resolve, reject) => {
+      condb.query(
+        `INSERT INTO fm_pictures (url, uid, name) VALUES (?,?,?)`,
+        [url, data.uid, name],
+        (err: any, result: any, fields: any) => {
+          if (err) {
+            console.error("Database error:", err);
+            reject(err);
+          }
+          resolve(result);
+        }
+      );
+    });
+
+    if (!create) return res.status(400).send("Not created!");
+
+    return res.status(200).json({
+      msg: "Created picture success!",
+    });
+  } catch (err) {
+    console.log(err);
+  }
+});
 
 export default router;

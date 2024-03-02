@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { jwtService } from "../../services";
 import path from "path";
+
 const express = require("express");
 
 const router = express.Router();
@@ -70,9 +71,24 @@ const uploadImage = async (file: any, quantity: any) => {
   }
 };
 
-router.get("/", (req: Request, res: Response) => {
-  return res.send("Not found");
-});
+/**
+ * @swagger
+ * tags:
+ *   - name: firebase
+ *     description: Operations related to firebase
+ */
+
+/**
+ * @swagger
+ * /firebase/upload:
+ *   post:
+ *     summary: Upload Image
+ *     description: Require Auth Accept PNG JPG JPEG GIF Only
+ *     responses:
+ *       200:
+ *         description: return a url image
+ *     tags: [firebase]
+ */
 
 router.post("/upload", async (req: Request, res: Response) => {
   try {
@@ -83,7 +99,7 @@ router.post("/upload", async (req: Request, res: Response) => {
         msg,
       });
     }
-    
+
     upload(req, res, async (err) => {
       if (err instanceof multer.MulterError) {
         // MulterError: File too large or other Multer errors
@@ -117,6 +133,18 @@ router.post("/upload", async (req: Request, res: Response) => {
     return res.status(500).send("Internal server error");
   }
 });
+
+/**
+ * @swagger
+ * /firebase/delete:
+ *   post:
+ *     summary: Delete Image
+ *     description: Require Auth and body url
+ *     responses:
+ *       200:
+ *         description: return a url image
+ *     tags: [firebase]
+ */
 
 router.post("/delete", async (req: Request, res: Response) => {
   try {
