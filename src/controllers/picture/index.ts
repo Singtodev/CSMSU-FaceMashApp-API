@@ -176,7 +176,7 @@ router.post("/vote", async (req: Request, res: Response) => {
     } else if (winnerPic[0].rating_score == opponentPic[0].rating_score) {
       score = Math.floor(Math.random() * 5) + 1; // 1 - 5 point
     } else {
-      score = Math.floor(Math.random() * 21) + 5; // 5 - 20 point
+      score = Math.floor(Math.random() * 15) + 5; // 5 - 20 point
     }
 
     // Insert vote into database
