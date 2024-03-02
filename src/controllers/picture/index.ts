@@ -101,10 +101,26 @@ router.get("/random", async (req: Request, res: Response) => {
       `SELECT * FROM fm_pictures ORDER BY RAND() LIMIT 1`
     );
 
+    const refPicOne = await queryAsync(`SELECT * FROM fm_users where uid = ?`, [
+      picOne[0].uid,
+    ]);
+
+    delete refPicOne[0].password;
+
+    picOne[0].ref = refPicOne[0];
+
     const picTwo = await queryAsync(
       `SELECT * FROM fm_pictures WHERE pid != ? AND rating_score BETWEEN ? AND ? ORDER BY RAND() LIMIT 1 `,
       [picOne[0].pid, picOne[0].rating_score - 50, picOne[0].rating_score + 50]
     );
+
+    const refPicTwo = await queryAsync(`SELECT * FROM fm_users where uid = ?`, [
+      picTwo[0].uid,
+    ]);
+
+    delete refPicTwo[0].password;
+
+    picTwo[0].ref = refPicTwo[0];
 
     if (picOne.length > 0 && picTwo.length > 0) {
       return res.status(200).json([...picOne, ...picTwo]);
@@ -225,7 +241,10 @@ router.post("/", async (req: Request, res: Response) => {
       );
     });
 
-    if(count.pic_count >= 5) return res.status(404).send(" Maximum picture you have " + count.pic_count + " items");
+    if (count.pic_count >= 5)
+      return res
+        .status(404)
+        .send(" Maximum picture you have " + count.pic_count + " items");
 
     const create = await new Promise((resolve, reject) => {
       condb.query(

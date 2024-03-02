@@ -66,7 +66,14 @@ router.get("/me", async (req: Request, res: Response) => {
         msg,
       });
     }
-    return res.json({ ...data });
+
+    return condb.query(
+      "select * from fm_users where uid = ?",
+      [data.uid],
+      (err: any, result: any, fields: any) => {
+        return res.json(result[0]);
+      }
+    );
   } catch (err) {
     return res.status(500).send("Internal server error");
   }
@@ -165,6 +172,8 @@ router.put("/:id", async (req: Request, res: Response) => {
     // Extract user data from request body
     const ud: User = req.body;
 
+    console.log(ud);
+
     // Check if user exists
     const user = await queryAsync("SELECT * FROM fm_users WHERE uid = ?", [id]);
 
@@ -175,13 +184,17 @@ router.put("/:id", async (req: Request, res: Response) => {
     // Merge new data with existing data
     const updatedUser: User = { ...user[0], ...ud };
 
+    console.log(updatedUser);
+
     // Update user details
     await queryAsync(
       "UPDATE fm_users SET full_name = ?, avatar_url = ? WHERE uid = ?",
       [updatedUser.full_name, updatedUser.avatar_url, id]
     );
 
-    return res.status(200).send("User updated successfully");
+    return res.status(200).json({
+      msg: "User updated successfully",
+    });
   } catch (err) {
     console.error(err);
     return res.status(500).send("Internal server error");

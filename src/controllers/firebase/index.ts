@@ -40,7 +40,7 @@ const upload = multer({
   fileFilter: async (req, file, cb) => {
     checkType(file, cb);
   },
-}).single("image");
+}).single("file");
 
 const checkType = (file: any, cb: any) => {
   const TypeAccepts = /jpeg|jpg|png|gif/;
@@ -99,7 +99,7 @@ router.post("/upload", async (req: Request, res: Response) => {
         msg,
       });
     }
-
+    
     upload(req, res, async (err) => {
       if (err instanceof multer.MulterError) {
         // MulterError: File too large or other Multer errors
@@ -111,6 +111,7 @@ router.post("/upload", async (req: Request, res: Response) => {
           .json({ error: "Internal server error", msg: err });
       }
 
+
       if (!req.file) {
         return res.status(400).json({ error: "No file uploaded" });
       }
@@ -120,6 +121,8 @@ router.post("/upload", async (req: Request, res: Response) => {
         type: req.file.mimetype,
         buffer: req.file.buffer,
       };
+
+
 
       const urlImage = await uploadImage(file, "single");
 
