@@ -33,7 +33,7 @@ router.get("/", async (req: Request, res: Response) => {
     //     msg,
     //   });
     // }
-    let sql = `SELECT * FROM rankOrder ORDER BY rating_score DESC`;
+    let sql = `SELECT * FROM rankOrder ORDER BY rank ASC `;
     condb.query(sql, (err, result) => {
       if (err) throw err;
       return res.json(result);

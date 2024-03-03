@@ -171,9 +171,6 @@ router.put("/:id", async (req: Request, res: Response) => {
 
     // Extract user data from request body
     const ud: User = req.body;
-
-    console.log(ud);
-
     // Check if user exists
     const user = await queryAsync("SELECT * FROM fm_users WHERE uid = ?", [id]);
 

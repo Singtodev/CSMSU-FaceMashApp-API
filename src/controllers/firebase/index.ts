@@ -123,14 +123,16 @@ router.post("/upload", async (req: Request, res: Response) => {
       };
 
 
-
       const urlImage = await uploadImage(file, "single");
+
+      console.log(urlImage);
 
       // Send success response
       return res.status(200).json({
         url: urlImage,
         msg: "File uploaded successfully!",
       });
+
     });
   } catch (err) {
     return res.status(500).send("Internal server error");
