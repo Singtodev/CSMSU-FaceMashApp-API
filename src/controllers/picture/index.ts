@@ -33,7 +33,7 @@ router.get("/", async (req: Request, res: Response) => {
     //     msg,
     //   });
     // }
-    let sql = `SELECT * FROM rankOrder ORDER BY rank ASC `;
+    let sql = "SELECT * FROM rankOrder ORDER BY `rank` ASC";
     condb.query(sql, (err, result) => {
       if (err) throw err;
       return res.json(result);
@@ -111,7 +111,11 @@ router.get("/random", async (req: Request, res: Response) => {
 
     const picTwo = await queryAsync(
       `SELECT * FROM fm_pictures WHERE pid != ? AND rating_score BETWEEN ? AND ? ORDER BY RAND() LIMIT 1 `,
-      [picOne[0].pid, picOne[0].rating_score - 100, picOne[0].rating_score + 100]
+      [
+        picOne[0].pid,
+        picOne[0].rating_score - 100,
+        picOne[0].rating_score + 100,
+      ]
     );
 
     const refPicTwo = await queryAsync(`SELECT * FROM fm_users where uid = ?`, [
