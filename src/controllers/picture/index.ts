@@ -111,7 +111,7 @@ router.get("/random", async (req: Request, res: Response) => {
 
     const picTwo = await queryAsync(
       `SELECT * FROM fm_pictures WHERE pid != ? AND rating_score BETWEEN ? AND ? ORDER BY RAND() LIMIT 1 `,
-      [picOne[0].pid, picOne[0].rating_score - 50, picOne[0].rating_score + 50]
+      [picOne[0].pid, picOne[0].rating_score - 100, picOne[0].rating_score + 100]
     );
 
     const refPicTwo = await queryAsync(`SELECT * FROM fm_users where uid = ?`, [
