@@ -184,8 +184,6 @@ router.put("/:id", async (req: Request, res: Response) => {
     // Merge new data with existing data
     const updatedUser: User = { ...user[0], ...ud };
 
-    console.log(updatedUser);
-
     // Update user details
     await queryAsync(
       "UPDATE fm_users SET full_name = ?, avatar_url = ? WHERE uid = ?",

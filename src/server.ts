@@ -72,6 +72,7 @@ app.use("/auth", routes.auth);
 app.use("/users", routes.user);
 app.use("/picture", routes.picture);
 app.use("/firebase", routes.firebase);
+app.use("/report", routes.report);
 
 const PORT = process.env.PORT || 8000;
 
