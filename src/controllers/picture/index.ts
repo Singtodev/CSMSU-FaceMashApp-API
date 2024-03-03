@@ -65,7 +65,9 @@ router.get("/me", async (req: Request, res: Response) => {
       });
     }
 
-    let sql = `SELECT * FROM fm_pictures where uid = ? ORDER BY create_at DESC `;
+    let sql = `SELECT fm_pictures.*,rankOrder.rank FROM fm_pictures 
+    LEFT JOIN rankOrder ON rankOrder.pid = fm_pictures.pid
+    where uid = 10 ORDER BY create_at DESC `;
     condb.query(sql, [data.uid], (err, result) => {
       if (err) throw err;
       return res.json(result);
