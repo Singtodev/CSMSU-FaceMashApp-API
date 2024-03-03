@@ -67,10 +67,52 @@ router.get("/me", async (req: Request, res: Response) => {
 
     let sql = `SELECT fm_pictures.*,rankOrder.rank FROM fm_pictures 
     LEFT JOIN rankOrder ON rankOrder.pid = fm_pictures.pid
-    where uid = 10 ORDER BY create_at DESC `;
+    where uid = ? ORDER BY create_at DESC `;
     condb.query(sql, [data.uid], (err, result) => {
       if (err) throw err;
       return res.json(result);
+    });
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+router.get("/id/:pid", async (req: Request, res: Response) => {
+  try {
+    const { status, msg, data } = await jwtService.guardAuth(req, res);
+    if (!status) {
+      return res.status(400).json({
+        code: "Unauthorized",
+        msg,
+      });
+    }
+
+    const { pid } = req.params;
+
+    if (!pid) return res.status(400).send("Required pid");
+
+    const pic = await queryAsync(
+      `SELECT fm_pictures.*,rankOrder.rank , fm_users.full_name as created_by ,fm_users.avatar_url FROM fm_pictures 
+    LEFT JOIN rankOrder ON rankOrder.pid = fm_pictures.pid
+    LEFT JOIN fm_users ON fm_users.uid = fm_pictures.uid
+    where fm_pictures.pid = ? ORDER BY create_at DESC `,
+      [pid]
+    );
+
+    if (pic.length == 0) return res.send("not found !");
+
+    const allPic = await queryAsync(
+      `SELECT fm_pictures.*,rankOrder.rank FROM fm_pictures 
+      LEFT JOIN rankOrder ON rankOrder.pid = fm_pictures.pid
+      where fm_pictures.uid = ? ORDER BY create_at DESC`,
+      [pic[0].uid]
+    );
+
+    let items = allPic.filter((item: any) => item.pid !== pic[0].pid);
+
+    return res.status(200).json({
+      picture: pic[0],
+      others_picture: items,
     });
   } catch (err) {
     console.log(err);
