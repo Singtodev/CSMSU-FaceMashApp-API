@@ -184,8 +184,6 @@ router.post("/reset_password", async (req: Request, res: Response) => {
 
     const { oldPassword, newPassword } = req.body;
 
-    console.log(oldPassword);
-
     if (oldPassword == null || newPassword == null) {
       return res
         .status(404)
@@ -218,7 +216,7 @@ router.post("/reset_password", async (req: Request, res: Response) => {
     return res.status(200).json({
       affectedRows: Update.affectedRows,
     });
-    
+
   } catch (err) {
     console.log(err);
   }
