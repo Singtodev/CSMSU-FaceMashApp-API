@@ -79,13 +79,13 @@ router.get("/me", async (req: Request, res: Response) => {
 
 router.get("/id/:pid", async (req: Request, res: Response) => {
   try {
-    const { status, msg, data } = await jwtService.guardAuth(req, res);
-    if (!status) {
-      return res.status(400).json({
-        code: "Unauthorized",
-        msg,
-      });
-    }
+    // const { status, msg, data } = await jwtService.guardAuth(req, res);
+    // if (!status) {
+    //   return res.status(400).json({
+    //     code: "Unauthorized",
+    //     msg,
+    //   });
+    // }
 
     const { pid } = req.params;
 
@@ -107,7 +107,7 @@ router.get("/id/:pid", async (req: Request, res: Response) => {
       where fm_pictures.uid = ? ORDER BY create_at DESC`,
       [pic[0].uid]
     );
-
+    
     let items = allPic.filter((item: any) => item.pid !== pic[0].pid);
 
     return res.status(200).json({
