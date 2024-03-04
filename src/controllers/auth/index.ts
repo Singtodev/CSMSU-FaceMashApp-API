@@ -1,6 +1,6 @@
 import mysql from "mysql";
 import { Request, Response } from "express";
-import { condb } from "../../condb";
+import { condb, queryAsync } from "../../condb";
 import { bcryptService, jwtService } from "../../services";
 import { User } from "../../models/user";
 import { body, validationResult } from "express-validator";
@@ -144,7 +144,6 @@ router.post(
   }
 );
 
-
 /**
  * @swagger
  * /auth/refresh_token:
@@ -173,5 +172,56 @@ router.get("/refresh_token", async (req: Request, res: Response) => {
   }
 });
 
+router.post("/reset_password", async (req: Request, res: Response) => {
+  try {
+    const { status, msg, data } = await jwtService.guardAuth(req, res);
+    if (!status) {
+      return res.status(400).json({
+        code: "Unauthorized",
+        msg,
+      });
+    }
+
+    const { oldPassword, newPassword } = req.body;
+
+    console.log(oldPassword);
+
+    if (oldPassword == null || newPassword == null) {
+      return res
+        .status(404)
+        .json({ msg: "Required oldPassword and newPassword" });
+    }
+
+    let User = await queryAsync(`SELECT * FROM fm_users uid where uid = ? `, [
+      data.uid,
+    ]);
+
+    if (User.length == 0)
+      return res.status(404).json({
+        msg: "Not found User!",
+      });
+
+    let pwdHashed = User[0].password;
+
+    let isMatch = await bcryptService.comparePassword(oldPassword, pwdHashed);
+
+    if (!isMatch)
+      return res.status(404).json({ msg: "Password old is not matched!" });
+
+    let pwdChange = await bcryptService.hashPassword(newPassword);
+
+    let Update = await queryAsync(
+      `UPDATE fm_users SET password = ? where uid = ? `,
+      [pwdChange, data.uid]
+    );
+
+    return res.status(200).json({
+      affectedRows: Update.affectedRows,
+    });
+    
+  } catch (err) {
+    console.log(err);
+  }
+});
 
 export default router;
