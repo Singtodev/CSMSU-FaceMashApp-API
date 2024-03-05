@@ -2,6 +2,7 @@ import mysql from "mysql";
 import { Request, Response } from "express";
 import { condb, queryAsync } from "../../condb";
 import { jwtService } from "../../services";
+import { updateRatings } from "../../services/elorating";
 const express = require("express");
 const router = express.Router();
 
@@ -107,7 +108,7 @@ router.get("/id/:pid", async (req: Request, res: Response) => {
       where fm_pictures.uid = ? ORDER BY create_at DESC`,
       [pic[0].uid]
     );
-    
+
     let items = allPic.filter((item: any) => item.pid !== pic[0].pid);
 
     return res.status(200).json({
@@ -219,27 +220,53 @@ router.post("/vote", async (req: Request, res: Response) => {
 
     let score = 0;
 
-    // Calculate score
-    if (winnerPic[0].rating_score > opponentPic[0].rating_score) {
-      score = Math.floor(Math.random() * 5) + 1; // 1 - 5 point
-    } else if (winnerPic[0].rating_score == opponentPic[0].rating_score) {
-      score = Math.floor(Math.random() * 5) + 1; // 1 - 5 point
-    } else {
-      score = Math.floor(Math.random() * 15) + 5; // 5 - 20 point
-    }
+    const actualScorePlayerA = 1;
+    const kFactor = 32;
+
+    const [newPlayerARating, newPlayerBRating] = updateRatings(
+      winnerPic[0].rating_score,
+      opponentPic[0].rating_score,
+      actualScorePlayerA,
+      kFactor
+    );
+
+    console.log(
+      `win : ${winnerPic[0].rating_score} , lost : ${opponentPic[0].rating_score} =>  ${newPlayerARating} , ${newPlayerBRating}`
+    );
+
+    // // Calculate score
+    // if (winnerPic[0].rating_score > opponentPic[0].rating_score) {
+    //   score = Math.floor(Math.random() * 5) + 1; // 1 - 5 point
+    // } else if (winnerPic[0].rating_score == opponentPic[0].rating_score) {
+    //   score = Math.floor(Math.random() * 5) + 1; // 1 - 5 point
+    // } else {
+    //   score = Math.floor(Math.random() * 15) + 5; // 5 - 20 point
+    // }
+
+    const ratingDifferenceA = newPlayerARating - winnerPic[0].rating_score;
+    const ratingDifferenceB = newPlayerBRating - opponentPic[0].rating_score;
 
     // Insert vote into database
     const insertVoteSql =
       "INSERT INTO fm_votes(uid , pid , opponent_id , score  , result ) VALUES(?,?,?,?,?)";
-    const insertVoteParams = [uid, winnerId, opponentId, score, 1];
+    const insertVoteParams = [uid, winnerId, opponentId, ratingDifferenceA, 1];
     await queryAsync(insertVoteSql, insertVoteParams);
 
-    // Update winner's vote count
-    const updateSql =
-      "UPDATE fm_pictures SET rating_score = rating_score + ? , vote_count = vote_count + 1 where pid = ?";
-    const updateParams = [score, winnerId];
+    const insertVote2Sql =
+      "INSERT INTO fm_votes(uid , pid , opponent_id , score  , result ) VALUES(?,?,?,?,?)";
+    const insertVote2Params = [uid, opponentId, winnerId, ratingDifferenceB, 0];
+    await queryAsync(insertVote2Sql, insertVote2Params);
 
-    await queryAsync(updateSql, updateParams);
+    // Update winner's vote count
+    const updateSqlPic1 =
+      "UPDATE fm_pictures SET rating_score = ?, vote_count = vote_count + 1 where pid = ?";
+    const updateParamsPic1 = [newPlayerARating, winnerId];
+    await queryAsync(updateSqlPic1, updateParamsPic1);
+
+    const updateSqlPic2 =
+      "UPDATE fm_pictures SET rating_score = ?, vote_count = vote_count + 1 where pid = ?";
+    const updateParamsPic2 = [newPlayerBRating, opponentId];
+    await queryAsync(updateSqlPic2, updateParamsPic2);
 
     return res.status(200).json({ affectedRows: 1, score, win: winnerPic });
   } catch (err) {
