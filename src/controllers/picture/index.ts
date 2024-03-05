@@ -268,7 +268,9 @@ router.post("/vote", async (req: Request, res: Response) => {
     const updateParamsPic2 = [newPlayerBRating, opponentId];
     await queryAsync(updateSqlPic2, updateParamsPic2);
 
-    return res.status(200).json({ affectedRows: 1, score, win: winnerPic });
+    return res
+      .status(200)
+      .json({ affectedRows: 1, newPlayerARating, win: winnerPic });
   } catch (err) {
     console.error("Error:", err);
     return res.status(500).json({ error: "Internal Server Error" });
