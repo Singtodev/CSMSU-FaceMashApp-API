@@ -234,15 +234,6 @@ router.post("/vote", async (req: Request, res: Response) => {
       `win : ${winnerPic[0].rating_score} , lost : ${opponentPic[0].rating_score} =>  ${newPlayerARating} , ${newPlayerBRating}`
     );
 
-    // // Calculate score
-    // if (winnerPic[0].rating_score > opponentPic[0].rating_score) {
-    //   score = Math.floor(Math.random() * 5) + 1; // 1 - 5 point
-    // } else if (winnerPic[0].rating_score == opponentPic[0].rating_score) {
-    //   score = Math.floor(Math.random() * 5) + 1; // 1 - 5 point
-    // } else {
-    //   score = Math.floor(Math.random() * 15) + 5; // 5 - 20 point
-    // }
-
     const ratingDifferenceA = newPlayerARating - winnerPic[0].rating_score;
     const ratingDifferenceB = newPlayerBRating - opponentPic[0].rating_score;
 
@@ -345,6 +336,48 @@ router.post("/", async (req: Request, res: Response) => {
     });
   } catch (err) {
     console.log(err);
+  }
+});
+
+router.put("/:pid", async (req: Request, res: Response) => {
+  try {
+    const { status, msg, data } = await jwtService.guardAuth(req, res);
+    if (!status) {
+      return res.status(400).json({
+        code: "Unauthorized",
+        msg,
+      });
+    }
+    const { pid } = req.params;
+    if (!pid) return res.status(400).send("Required pid");
+
+    // Extract user data from request body
+    const pd: any = req.body;
+    // Check if user exists
+    const picture = await queryAsync(
+      "SELECT * FROM fm_pictures WHERE pid = ?",
+      [pid]
+    );
+
+    if (picture.length === 0) {
+      return res.status(404).send("Picture not found");
+    }
+
+    // Merge new data with existing data
+    const updatedPicture: any = { ...picture[0], ...pd };
+
+    // Update user details
+    await queryAsync(
+      "UPDATE fm_pictures SET name = ?, url = ? WHERE pid = ?",
+      [updatedPicture.name, updatedPicture.url, pid]
+    );
+
+    return res.status(200).json({
+      msg: "Picture updated successfully",
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).send("Internal server error");
   }
 });
 
