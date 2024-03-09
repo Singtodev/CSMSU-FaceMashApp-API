@@ -91,7 +91,7 @@ router.get("/me", async (req: Request, res: Response) => {
  *     tags: [user]
  */
 
-router.get("/:id", async (req: Request, res: Response) => {
+router.get("/id/:id", async (req: Request, res: Response) => {
   try {
     const { status, msg, data } = await jwtService.guardAuth(req, res);
     if (!status) {
@@ -103,16 +103,22 @@ router.get("/:id", async (req: Request, res: Response) => {
     const { id } = req.params;
     if (!id) return res.send("Required uid");
 
-    return condb.query(
-      "select * from fm_users where uid = ?",
-      [id],
-      (err: any, result: any, fields: any) => {
-        if (result.length == 0) {
-          return res.status(404).send("Not Found User");
-        }
-        return res.json(result);
-      }
+    const user = await queryAsync("select * from fm_users where uid = ?",[id]);
+
+    if (user.length == 0) {
+      return res.status(404).send("Not Found User");
+    }
+    const allPic = await queryAsync(
+      `SELECT fm_pictures.*,rankOrder.rank FROM fm_pictures 
+      LEFT JOIN rankOrder ON rankOrder.pid = fm_pictures.pid
+      where fm_pictures.uid = ? ORDER BY create_at DESC`,
+      [user[0].uid]
     );
+    
+    user[0].pictures = allPic
+
+    return res.status(200).json(user)
+
   } catch (err) {
     return res.status(500).send("Internal server error");
   }

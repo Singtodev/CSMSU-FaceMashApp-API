@@ -109,11 +109,11 @@ router.get("/id/:pid", async (req: Request, res: Response) => {
       [pic[0].uid]
     );
 
-    let items = allPic.filter((item: any) => item.pid !== pic[0].pid);
+    // let items = allPic.filter((item: any) => item.pid !== pic[0].pid);
 
     return res.status(200).json({
       picture: pic[0],
-      others_picture: items,
+      others_picture: allPic,
     });
   } catch (err) {
     console.log(err);
