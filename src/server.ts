@@ -79,13 +79,6 @@ app.use("/report", routes.report);
 app.get("/cooldown/:app_id" , async (req: Request , res: Response) => {
 
   try{
-    const { status, msg, data } = await jwtService.guardAuth(req, res);
-    if (!status) {
-      return res.status(400).json({
-        code: "Unauthorized",
-        msg,
-      });
-    }
     const { app_id } =  req.params;
     if(!app_id) return res.status(404).send('Not found App Id');
     const app = await queryAsync(`select * from fm_setting where app_id = ?`,[app_id]);
