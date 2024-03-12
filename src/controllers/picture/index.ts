@@ -366,10 +366,13 @@ router.put("/:pid", async (req: Request, res: Response) => {
     // Merge new data with existing data
     const updatedPicture: any = { ...picture[0], ...pd };
 
+    await queryAsync("DELETE FROM fm_dailyrank WHERE pid = ?", [pid]);
+    await queryAsync("DELETE FROM fm_votes WHERE pid = ?", [pid]);
+
     // Update user details
     await queryAsync(
-      "UPDATE fm_pictures SET name = ?, url = ? WHERE pid = ?",
-      [updatedPicture.name, updatedPicture.url, pid]
+      "UPDATE fm_pictures SET name = ?, url = ?, rating_score = ?, vote_count = ?, update_at = CURRENT_TIMESTAMP() WHERE pid = ?",
+      [updatedPicture.name, updatedPicture.url, 1500, 0, pid]
     );
 
     return res.status(200).json({
@@ -379,6 +382,29 @@ router.put("/:pid", async (req: Request, res: Response) => {
     console.error(err);
     return res.status(500).send("Internal server error");
   }
+});
+
+router.delete("/:pid", async (req: Request, res: Response) => {
+  try {
+    const { status, msg, data } = await jwtService.guardAuth(req, res);
+    if (!status) {
+      return res.status(400).json({
+        code: "Unauthorized",
+        msg,
+      });
+    }
+
+    const { pid } = req.params;
+    if (!pid) return res.status(400).send("Required pid");
+
+    const picture = await queryAsync("DELETE FROM fm_pictures WHERE pid = ?", [
+      pid,
+    ]);
+
+    return res.status(200).json({
+      affectedRow: picture.affectedRows,
+    });
+  } catch (err) {}
 });
 
 export default router;
