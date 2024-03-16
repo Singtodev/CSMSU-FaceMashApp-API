@@ -218,8 +218,6 @@ router.post("/vote", async (req: Request, res: Response) => {
       [opponentId]
     );
 
-    let score = 0;
-
     const actualScorePlayerA = 1;
     const kFactor = 32;
 
@@ -228,10 +226,6 @@ router.post("/vote", async (req: Request, res: Response) => {
       opponentPic[0].rating_score,
       actualScorePlayerA,
       kFactor
-    );
-
-    console.log(
-      `win : ${winnerPic[0].rating_score} , lost : ${opponentPic[0].rating_score} =>  ${newPlayerARating} , ${newPlayerBRating}`
     );
 
     const ratingDifferenceA = newPlayerARating - winnerPic[0].rating_score;
@@ -259,9 +253,50 @@ router.post("/vote", async (req: Request, res: Response) => {
     const updateParamsPic2 = [newPlayerBRating, opponentId];
     await queryAsync(updateSqlPic2, updateParamsPic2);
 
-    return res
-      .status(200)
-      .json({ affectedRows: 1, newPlayerARating, win: winnerPic });
+    return res.status(200).json({ affectedRows: 1, win: winnerPic });
+  } catch (err) {
+    console.error("Error:", err);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+router.post("/vote/guest", async (req: Request, res: Response) => {
+  try {
+    const { winnerId, opponentId } = req.body;
+    // Retrieve winner picture
+    const winnerPic = await queryAsync(
+      "SELECT * FROM fm_pictures WHERE pid = ?",
+      [winnerId]
+    );
+
+    // Retrieve opponent picture
+    const opponentPic = await queryAsync(
+      "SELECT * FROM fm_pictures WHERE pid = ?",
+      [opponentId]
+    );
+
+    const actualScorePlayerA = 1;
+    const kFactor = 32;
+
+    const [newPlayerARating, newPlayerBRating] = updateRatings(
+      winnerPic[0].rating_score,
+      opponentPic[0].rating_score,
+      actualScorePlayerA,
+      kFactor
+    );
+
+    // Update winner's vote count
+    const updateSqlPic1 =
+      "UPDATE fm_pictures SET rating_score = ?, vote_count = vote_count + 1 where pid = ?";
+    const updateParamsPic1 = [newPlayerARating, winnerId];
+    await queryAsync(updateSqlPic1, updateParamsPic1);
+
+    const updateSqlPic2 =
+      "UPDATE fm_pictures SET rating_score = ?, vote_count = vote_count + 1 where pid = ?";
+    const updateParamsPic2 = [newPlayerBRating, opponentId];
+    await queryAsync(updateSqlPic2, updateParamsPic2);
+
+    return res.status(200).json({ affectedRows: 1, win: winnerPic });
   } catch (err) {
     console.error("Error:", err);
     return res.status(500).json({ error: "Internal Server Error" });
