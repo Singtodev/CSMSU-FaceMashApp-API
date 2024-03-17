@@ -253,7 +253,20 @@ router.post("/vote", async (req: Request, res: Response) => {
     const updateParamsPic2 = [newPlayerBRating, opponentId];
     await queryAsync(updateSqlPic2, updateParamsPic2);
 
-    return res.status(200).json({ affectedRows: 1, win: winnerPic });
+    return res.status(200).json({
+      affectedRows: 1,
+      win: winnerPic,
+      results: {
+        win: {
+          name: winnerPic[0].name,
+          score: newPlayerARating,
+        },
+        lost: {
+          name: opponentPic[0].name,
+          score: newPlayerBRating,
+        },
+      },
+    });
   } catch (err) {
     console.error("Error:", err);
     return res.status(500).json({ error: "Internal Server Error" });
@@ -296,7 +309,20 @@ router.post("/vote/guest", async (req: Request, res: Response) => {
     const updateParamsPic2 = [newPlayerBRating, opponentId];
     await queryAsync(updateSqlPic2, updateParamsPic2);
 
-    return res.status(200).json({ affectedRows: 1, win: winnerPic });
+    return res.status(200).json({
+      affectedRows: 1,
+      win: winnerPic,
+      results: {
+        win: {
+          name: winnerPic[0].name,
+          score: newPlayerARating,
+        },
+        lost: {
+          name: opponentPic[0].name,
+          score: newPlayerBRating,
+        },
+      },
+    });
   } catch (err) {
     console.error("Error:", err);
     return res.status(500).json({ error: "Internal Server Error" });
