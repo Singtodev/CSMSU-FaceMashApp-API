@@ -34,11 +34,31 @@ router.get("/", async (req: Request, res: Response) => {
     //     msg,
     //   });
     // }
-    let sql = "SELECT * FROM rankOrder ORDER BY `rank` ASC";
-    condb.query(sql, (err, result) => {
-      if (err) throw err;
-      return res.json(result);
+    let sql = "SELECT * FROM rankOrder ORDER BY `rank` ASC LIMIT 10";
+    condb.query(sql, async (err, result) => {
+      if (err) {
+        console.error("Error:", err);
+        return res.status(500).json({ error: "Internal Server Error" });
+      }
+    
+      try {
+        if (result.length > 0) {
+          for (let i = 0; i < result.length; i++) {
+            const item = result[i];
+            const updateRank = await queryAsync("CALL updateRank(?)", [item.pid]);
+            result[i].updateRank = updateRank[0][0].updateRank;
+          }
+        }
+        return res.json(result);
+      } catch (error) {
+        console.error("Error:", error);
+        return res.status(500).json({ error: "Internal Server Error" });
+      }
     });
+    
+
+
+
   } catch (err) {
     console.log(err);
   }
@@ -69,9 +89,21 @@ router.get("/me", async (req: Request, res: Response) => {
     let sql = `SELECT fm_pictures.*,rankOrder.rank FROM fm_pictures 
     LEFT JOIN rankOrder ON rankOrder.pid = fm_pictures.pid
     where uid = ? ORDER BY create_at DESC `;
-    condb.query(sql, [data.uid], (err, result) => {
+    condb.query(sql, [data.uid], async (err, result) => {
       if (err) throw err;
-      return res.json(result);
+      try {
+        if (result.length > 0) {
+          for (let i = 0; i < result.length; i++) {
+            const item = result[i];
+            const updateRank = await queryAsync("CALL updateRank(?)", [item.pid]);
+            result[i].updateRank = updateRank[0][0].updateRank;
+          }
+        }
+        return res.json(result);
+      } catch (error) {
+        console.error("Error:", error);
+        return res.status(500).json({ error: "Internal Server Error" });
+      }
     });
   } catch (err) {
     console.log(err);
@@ -102,6 +134,11 @@ router.get("/id/:pid", async (req: Request, res: Response) => {
 
     if (pic.length == 0) return res.send("not found !");
 
+    const updateRank = await queryAsync(
+      `call updateRank(?) `,
+      [pid]
+    );
+
     const allPic = await queryAsync(
       `SELECT fm_pictures.*,rankOrder.rank FROM fm_pictures 
       LEFT JOIN rankOrder ON rankOrder.pid = fm_pictures.pid
@@ -109,8 +146,14 @@ router.get("/id/:pid", async (req: Request, res: Response) => {
       [pic[0].uid]
     );
 
-    // let items = allPic.filter((item: any) => item.pid !== pic[0].pid);
+    for (let i = 0; i < allPic.length; i++) {
+      const item = allPic[i];
+      const updateRank = await queryAsync("CALL updateRank(?)", [item.pid]);
+      allPic[i].updateRank = updateRank[0][0].updateRank;
+    }
 
+    // let items = allPic.filter((item: any) => item.pid !== pic[0].pid);
+    pic[0].updateRank = updateRank[0][0].updateRank
     return res.status(200).json({
       picture: pic[0],
       others_picture: allPic,

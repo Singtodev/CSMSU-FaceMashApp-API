@@ -32,6 +32,8 @@ router.get("/:uid", async (req: Request, res: Response) => {
       if (err) throw err;
       return res.json(result);
     });
+
+    
   } catch (err) {
     console.log(err);
   }

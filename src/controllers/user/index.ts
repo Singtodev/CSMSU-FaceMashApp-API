@@ -114,6 +114,12 @@ router.get("/id/:id", async (req: Request, res: Response) => {
       where fm_pictures.uid = ? ORDER BY create_at DESC`,
       [user[0].uid]
     );
+
+    for (let i = 0; i < allPic.length; i++) {
+      const item = allPic[i];
+      const updateRank = await queryAsync("CALL updateRank(?)", [item.pid]);
+      allPic[i].updateRank = updateRank[0][0].updateRank;
+    }
     
     user[0].pictures = allPic
 
