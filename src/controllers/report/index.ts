@@ -52,9 +52,9 @@ router.get("/picture/id/:pid", async (req: Request, res: Response) => {
     FROM fm_pictures
     LEFT JOIN fm_dailyrank ON fm_pictures.pid = fm_dailyrank.pid
     WHERE fm_pictures.pid = ?
-    AND fm_dailyrank.date >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)
+    AND fm_dailyrank.date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
     ORDER BY fm_dailyrank.pid , fm_dailyrank.date ASC`;
-    
+
     await condb.query(sql, [pid], (err, result) => {
       if (err) throw err;
       return res.json(result);
