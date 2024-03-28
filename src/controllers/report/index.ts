@@ -55,14 +55,8 @@ router.get("/picture/id/:pid", async (req: Request, res: Response) => {
     AND fm_dailyrank.date >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)
     ORDER BY fm_dailyrank.pid , fm_dailyrank.date ASC`;
     
-    let currentDate = await queryAsync('select * from rankOrder where pid = ?',[pid])
-    
     await condb.query(sql, [pid], (err, result) => {
       if (err) throw err;
-      result.push({
-        ...currentDate[0],
-        date: new Date().toISOString(),
-      })
       return res.json(result);
     });
   } catch (err) {
