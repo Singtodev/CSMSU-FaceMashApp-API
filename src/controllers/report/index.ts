@@ -52,10 +52,17 @@ router.get("/picture/id/:pid", async (req: Request, res: Response) => {
     FROM fm_pictures
     LEFT JOIN fm_dailyrank ON fm_pictures.pid = fm_dailyrank.pid
     WHERE fm_pictures.pid = ?
-    AND fm_dailyrank.date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+    AND fm_dailyrank.date >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)
     ORDER BY fm_dailyrank.pid , fm_dailyrank.date ASC`;
+    
+    let currentDate = await queryAsync('select * from rankOrder where pid = ?',[pid])
+    
     await condb.query(sql, [pid], (err, result) => {
       if (err) throw err;
+      result.push({
+        ...currentDate[0],
+        date: new Date().toISOString(),
+      })
       return res.json(result);
     });
   } catch (err) {
